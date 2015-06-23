@@ -1,0 +1,20 @@
+# build folders
+**/x64
+**/obj
+**/Debug
+**/Release
+**/dll
+**/ipch
+**/packages
+
+# VS files
+*.opensdf
+*.suo
+*.sdf
+*.vcxproj.user
+*.csproj.user
+*.so
+
+# doxygen output folders
+html
+latex
