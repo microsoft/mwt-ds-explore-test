@@ -90,8 +90,8 @@ namespace BlackBox
             }
         }
 
-        private readonly string CppExePath = @"..\..\..\explore-cpp\bin\Win32\Debug\black_box_tests.exe";
-        private readonly string CsharpExePath = @"..\..\..\explore-csharp\bin\AnyCPU\Debug\BlackBoxTests.exe";
+        private readonly string CppExePath = @"..\..\..\explore-cpp\bin\x64\Release\black_box_tests.exe";
+        private readonly string CsharpExePath = @"..\..\..\explore-csharp\bin\AnyCPU\Release\BlackBoxTests.exe";
         private readonly string WorkingDir = Path.Combine(Directory.GetCurrentDirectory(), "Test");
     }
 }
