@@ -17,10 +17,8 @@ namespace BlackBox
             string outputFilePatternActual = "prg_result_{0}_actual.txt";
             string outputJsonConfigFile = "prg.json";
 
-            Func<uint, string, string> formatPath = (i, pattern) => { return Path.Combine(WorkingDir, string.Format(pattern, i)); };
-
             // 2 tests for integer interval and 2 tests for unit interval.
-            var prgTests = new PrgTestConfiguration[4];
+            var prgTests = new ITestConfiguration[4];
             for (uint i = 0; i < prgTests.Length; i++)
             {
                 prgTests[i] = new PrgTestConfiguration 
@@ -28,39 +26,20 @@ namespace BlackBox
                     Seed = i,
                     Iterations = 1000,
                     UniformInterval = i < 2 ? new Tuple<uint, uint>(i * 10, (i + 10) * 10) : null,
-                    OutputFile = formatPath(i, outputFilePatternExpected)
                 };
             }
-            string jsonConfigFile = Path.Combine(WorkingDir, outputJsonConfigFile);
-            File.WriteAllText(jsonConfigFile, JsonConvert.SerializeObject(prgTests));
-
-            var psi = new ProcessStartInfo();
-            psi.FileName = CppExePath;
-            psi.Arguments = jsonConfigFile;
-            psi.CreateNoWindow = true;
-            psi.WindowStyle = ProcessWindowStyle.Hidden;
-
-            Process.Start(psi).WaitForExit();
-
-            for (uint i = 0; i < prgTests.Length; i++)
-            {
-                prgTests[i].OutputFile = formatPath(i, outputFilePatternActual);
-            }
-            File.WriteAllText(jsonConfigFile, JsonConvert.SerializeObject(prgTests));
-
-            psi.FileName = CsharpExePath;
-            Process.Start(psi).WaitForExit();
+            Run(outputFilePatternExpected, outputFilePatternActual, outputJsonConfigFile, prgTests);
 
             for (uint i = 0; i < 2; i++)
             {
                 // integer content so should be exact match
-                Assert.AreEqual(File.ReadAllText(formatPath(i, outputFilePatternExpected)), File.ReadAllText(formatPath(i, outputFilePatternActual)));
+                Assert.AreEqual(File.ReadAllText(FormatPath(outputFilePatternExpected, i)), File.ReadAllText(FormatPath(outputFilePatternActual, i)));
             }
 
             for (uint i = 2; i < 4; i++)
             {
-                float[] expected = File.ReadAllLines(formatPath(i, outputFilePatternExpected)).Select(l => Convert.ToSingle(l)).ToArray();
-                float[] actual = File.ReadAllLines(formatPath(i, outputFilePatternActual)).Select(l => Convert.ToSingle(l)).ToArray();
+                float[] expected = File.ReadAllLines(FormatPath(outputFilePatternExpected, i)).Select(l => Convert.ToSingle(l)).ToArray();
+                float[] actual = File.ReadAllLines(FormatPath(outputFilePatternActual, i)).Select(l => Convert.ToSingle(l)).ToArray();
 
                 Assert.AreEqual(expected.Length, actual.Length);
                 for (int j = 0; j < expected.Length; j++)
@@ -68,6 +47,57 @@ namespace BlackBox
                     // allow slightly different float precision
                     Assert.IsTrue(Math.Abs(expected[j] - actual[j]) < 1e-6);
                 }
+            }
+        }
+
+        [TestMethod]
+        public void TestHash()
+        {
+            string outputFilePatternExpected = "hash_result_{0}_expected.txt";
+            string outputFilePatternActual = "hash_result_{0}_actual.txt";
+            string outputJsonConfigFile = "hash.json";
+
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
+
+            var rand = new Random();
+
+            var hashTests = new ITestConfiguration[5];
+            for (uint i = 0; i < hashTests.Length; i++)
+            {
+                int numValues = rand.Next(10, 20);
+                var values = new string[numValues];
+
+                for (int v = 0; v < numValues; v++)
+                {
+                    if (rand.NextDouble() < 0.5)
+                    {
+                        // generate string of numbers only 
+                        values[v] = rand.Next(1000000).ToString("000000");
+                    }
+                    else
+                    {
+                        // generate random string
+                        int length = rand.Next(10, 20); // random length (in characters)
+
+                        values[v] = new string(Enumerable
+                            .Repeat(chars, length)
+                            .Select(s => s[rand.Next(s.Length)])
+                            .ToArray());
+                    }
+                }
+
+                hashTests[i] = new HashTestConfiguration
+                {
+                    Values = values.ToList()
+                };
+            }
+
+            Run(outputFilePatternExpected, outputFilePatternActual, outputJsonConfigFile, hashTests);
+
+            for (uint i = 0; i < hashTests.Length; i++)
+            {
+                // integer content so should be exact match
+                Assert.AreEqual(File.ReadAllText(FormatPath(outputFilePatternExpected, i)), File.ReadAllText(FormatPath(outputFilePatternActual, i)));
             }
         }
 
@@ -88,6 +118,39 @@ namespace BlackBox
             {
                 Directory.Delete(WorkingDir, recursive: true);
             }
+        }
+
+        private void Run(string outputFilePatternExpected, string outputFilePatternActual, string outputJsonConfigFile, ITestConfiguration[] tests)
+        {
+            for (uint i = 0; i < tests.Length; i++)
+            {
+                tests[i].OutputFile = FormatPath(outputFilePatternExpected, i);
+            }
+
+            string jsonConfigFile = Path.Combine(WorkingDir, outputJsonConfigFile);
+            File.WriteAllText(jsonConfigFile, JsonConvert.SerializeObject(tests));
+
+            var psi = new ProcessStartInfo();
+            psi.FileName = CppExePath;
+            psi.Arguments = jsonConfigFile;
+            psi.CreateNoWindow = true;
+            psi.WindowStyle = ProcessWindowStyle.Hidden;
+
+            Process.Start(psi).WaitForExit();
+
+            for (uint i = 0; i < tests.Length; i++)
+            {
+                tests[i].OutputFile = FormatPath(outputFilePatternActual, i);
+            }
+            File.WriteAllText(jsonConfigFile, JsonConvert.SerializeObject(tests));
+
+            psi.FileName = CsharpExePath;
+            Process.Start(psi).WaitForExit();
+        }
+
+        private string FormatPath(string pattern, uint iteration)
+        {
+            return Path.Combine(WorkingDir, string.Format(pattern, iteration));
         }
 
         private readonly string CppExePath = @"..\..\..\explore-cpp\bin\x64\Release\black_box_tests.exe";
