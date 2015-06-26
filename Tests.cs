@@ -101,6 +101,85 @@ namespace BlackBox
             }
         }
 
+        [TestMethod]
+        public void TestEpsilonGreedy()
+        {
+            string outputFilePatternExpected = "epsilon_greedy_result_{0}_expected.txt";
+            string outputFilePatternActual = "epsilon_greedy_result_{0}_actual.txt";
+            string outputJsonConfigFile = "epsilon_greedy.json";
+
+            var epsilonGreedyTests = new EpsilonGreedyTestConfiguration[]
+            {
+                // No exploration
+                new EpsilonGreedyTestConfiguration
+                {
+                    AppId = "EpsilonGreedyNoExplorationFixedActionContext",
+                    ContextType = ContextType.FixedAction, // test fixed-action context
+                    Epsilon = 0f,
+                    NumberOfActions = 20,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfiguration = new FixedPolicyConfiguration { Action = 10 }
+                },
+                new EpsilonGreedyTestConfiguration
+                {
+                    AppId = "EpsilonGreedyNoExplorationVariableActionContext",
+                    ContextType = ContextType.VariableAction, // test variable-action context
+                    Epsilon = 0f,
+                    NumberOfActions = 20,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfiguration = new FixedPolicyConfiguration { Action = 10 }
+                },
+
+                // Regular exploration
+                new EpsilonGreedyTestConfiguration
+                {
+                    AppId = "EpsilonGreedyRegularExplorationFixedActionContext",
+                    ContextType = ContextType.FixedAction,
+                    Epsilon = 0.2f,
+                    NumberOfActions = 10,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfiguration = new FixedPolicyConfiguration { Action = 9 }
+                },
+                new EpsilonGreedyTestConfiguration
+                {
+                    AppId = "EpsilonGreedyRegularExplorationVariableActionContext",
+                    ContextType = ContextType.VariableAction,
+                    Epsilon = 0.2f,
+                    NumberOfActions = 10,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfiguration = new FixedPolicyConfiguration { Action = 9 }
+                },
+
+                // Heavy exploration
+                new EpsilonGreedyTestConfiguration
+                {
+                    AppId = "EpsilonGreedyHeavyExplorationFixedActionContext",
+                    ContextType = ContextType.FixedAction,
+                    Epsilon = 0.9f,
+                    NumberOfActions = 90, // test many actions
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfiguration = new FixedPolicyConfiguration { Action = 81 }
+                },
+                new EpsilonGreedyTestConfiguration
+                {
+                    AppId = "EpsilonGreedyHeavyExplorationVariableActionContext",
+                    ContextType = ContextType.VariableAction,
+                    Epsilon = 0.9f,
+                    NumberOfActions = 90,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfiguration = new FixedPolicyConfiguration { Action = 81 }
+                }
+            };
+
+            Run(outputFilePatternExpected, outputFilePatternActual, outputJsonConfigFile, epsilonGreedyTests);
+
+            //for (uint i = 0; i < hashTests.Length; i++)
+            //{
+            //    // integer content so should be exact match
+            //    Assert.AreEqual(File.ReadAllText(FormatPath(outputFilePatternExpected, i)), File.ReadAllText(FormatPath(outputFilePatternActual, i)));
+            //}
+        }
+
         [TestInitialize]
         public void Initialize()
         {

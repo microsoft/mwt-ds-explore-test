@@ -9,26 +9,99 @@ namespace BlackBox
         string OutputFile { get; set; }
     }
 
+    public interface IExploreTestConfiguration : ITestConfiguration
+    {
+        /// <summary>
+        /// The application Id.
+        /// </summary>
+        string AppId { get; set; }
+
+        /// <summary>
+        /// The type of context, e.g. fixed-action or variable-action context.
+        /// </summary>
+        /// <remarks>
+        /// Black-box interface for each language should implement a corresponding Context based on this type.
+        /// </remarks>
+        ContextType ContextType { get; set; }
+
+        /// <summary>
+        /// Number of actions to explore.
+        /// </summary>
+        uint NumberOfActions { get; set; }
+
+        /// <summary>
+        /// List of experimental unit Ids to run exploration over.
+        /// </summary>
+        List<string> ExperimentalUnitIdList { get; set; }
+    }
+
+    public interface IPolicyConfiguration
+    {
+        /// <summary>
+        /// The type of default policy used within the exploration algorithm. For now only fixed-action policy is tested.
+        /// </summary>
+        /// <remarks>
+        /// Black-box interface for each language should implement a corresponding IPolicy based on this type and returning the action specified in the test configuration.
+        /// </remarks>
+        PolicyType PolicyType { get; }
+    }
+
+    /// <summary>
+    /// Black-box interface needs to implement an IPolicy class which always returns the same value as the Action property below.
+    /// </summary>
+    public class FixedPolicyConfiguration : IPolicyConfiguration
+    {
+        public PolicyType PolicyType
+        {
+            get { return PolicyType.Fixed; }
+        }
+
+        public uint Action { get; set; }
+    }
+
     public class PrgTestConfiguration : ITestConfiguration
     {
         public ulong Seed { get; set; }
         public int Iterations { get; set; }
         public Tuple<uint, uint> UniformInterval { get; set; }
-        public TestType Type { get { return TestType.PRG; } }
+        public TestType Type { get { return TestType.Prg; } }
         public string OutputFile { get; set; }
     }
 
     public class HashTestConfiguration : ITestConfiguration
     {
         public List<string> Values { get; set; }
-        public TestType Type { get { return TestType.HASH; } }
+        public TestType Type { get { return TestType.Hash; } }
         public string OutputFile { get; set; }
+    }
+
+    public class EpsilonGreedyTestConfiguration : IExploreTestConfiguration
+    {
+        public string AppId { get; set; }
+        public TestType Type { get { return TestType.EpsilonGreedy; } }
+        public ContextType ContextType { get; set; }
+        public string OutputFile { get; set; }
+        public uint NumberOfActions { get; set; }
+        public List<string> ExperimentalUnitIdList { get; set; }
+        public float Epsilon { get; set; }
+        public IPolicyConfiguration PolicyConfiguration { get; set; }
     }
 
     public enum TestType
     { 
-        PRG = 0,
-        HASH,
-        EXPLORE
+        Prg = 0,
+        Hash,
+        EpsilonGreedy
+    }
+
+    public enum PolicyType
+    { 
+        Fixed = 0
+    }
+
+    public enum ContextType
+    { 
+        FixedAction = 0,
+        VariableAction
     }
 }
