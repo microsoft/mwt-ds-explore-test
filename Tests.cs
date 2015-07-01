@@ -33,7 +33,7 @@ namespace BlackBox
             for (uint i = 0; i < 2; i++)
             {
                 // integer content so should be exact match
-                Assert.AreEqual(File.ReadAllText(FormatPath(outputFilePatternExpected, i)), File.ReadAllText(FormatPath(outputFilePatternActual, i)));
+                CompareExactMatch(FormatPath(outputFilePatternExpected, i), FormatPath(outputFilePatternActual, i));
             }
 
             for (uint i = 2; i < 4; i++)
@@ -97,7 +97,7 @@ namespace BlackBox
             for (uint i = 0; i < hashTests.Length; i++)
             {
                 // integer content so should be exact match
-                Assert.AreEqual(File.ReadAllText(FormatPath(outputFilePatternExpected, i)), File.ReadAllText(FormatPath(outputFilePatternActual, i)));
+                CompareExactMatch(FormatPath(outputFilePatternExpected, i), FormatPath(outputFilePatternActual, i));
             }
         }
 
@@ -173,11 +173,11 @@ namespace BlackBox
 
             Run(outputFilePatternExpected, outputFilePatternActual, outputJsonConfigFile, epsilonGreedyTests);
 
-            //for (uint i = 0; i < hashTests.Length; i++)
-            //{
-            //    // integer content so should be exact match
-            //    Assert.AreEqual(File.ReadAllText(FormatPath(outputFilePatternExpected, i)), File.ReadAllText(FormatPath(outputFilePatternActual, i)));
-            //}
+            for (uint i = 0; i < epsilonGreedyTests.Length; i++)
+            {
+                // integer content so should be exact match
+                CompareExactMatch(FormatPath(outputFilePatternExpected, i), FormatPath(outputFilePatternActual, i));
+            }
         }
 
         [TestInitialize]
@@ -197,6 +197,14 @@ namespace BlackBox
             {
                 Directory.Delete(WorkingDir, recursive: true);
             }
+        }
+
+        private bool CompareExactMatch(string file1, string file2)
+        {
+            string[] lines1 = File.ReadAllLines(file1).Select(l => l.Trim()).Where(l => String.IsNullOrEmpty(l)).ToArray();
+            string[] lines2 = File.ReadAllLines(file2).Select(l => l.Trim()).Where(l => String.IsNullOrEmpty(l)).ToArray();
+
+            return Enumerable.SequenceEqual(lines1, lines2);
         }
 
         private void Run(string outputFilePatternExpected, string outputFilePatternActual, string outputJsonConfigFile, ITestConfiguration[] tests)
