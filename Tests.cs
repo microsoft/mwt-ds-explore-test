@@ -247,12 +247,12 @@ namespace BlackBox
             }
         }
 
-        private bool CompareExactMatch(string file1, string file2)
+        private void CompareExactMatch(string file1, string file2)
         {
-            string[] lines1 = File.ReadAllLines(file1).Select(l => l.Trim()).Where(l => String.IsNullOrEmpty(l)).ToArray();
-            string[] lines2 = File.ReadAllLines(file2).Select(l => l.Trim()).Where(l => String.IsNullOrEmpty(l)).ToArray();
+            string[] lines1 = File.ReadAllLines(file1).Select(l => l.Trim()).Where(l => !String.IsNullOrEmpty(l)).ToArray();
+            string[] lines2 = File.ReadAllLines(file2).Select(l => l.Trim()).Where(l => !String.IsNullOrEmpty(l)).ToArray();
 
-            return Enumerable.SequenceEqual(lines1, lines2);
+            Assert.IsTrue(Enumerable.SequenceEqual(lines1, lines2));
         }
 
         private void Run(string outputFilePatternExpected, string outputFilePatternActual, string outputJsonConfigFile, ITestConfiguration[] tests)
