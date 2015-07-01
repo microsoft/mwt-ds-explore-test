@@ -41,7 +41,7 @@ namespace BlackBox
                 for (int j = 0; j < expected.Length; j++)
                 {
                     // allow slightly different float precision
-                    Assert.IsTrue(Math.Abs(expected[j] - actual[j]) < 1e-6);
+                    Assert.IsTrue(Math.Abs(expected[j] - actual[j]) < PrecisionOffset);
                 }
             }
         }
@@ -163,8 +163,7 @@ namespace BlackBox
 
             for (uint i = 0; i < epsilonGreedyTests.Length; i++)
             {
-                // integer content so should be exact match
-                CompareExactMatch(FormatPath(outputFilePatternExpected, i), FormatPath(outputFilePatternActual, i));
+                CompareExplorationData(FormatPath(outputFilePatternExpected, i), FormatPath(outputFilePatternActual, i));
             }
         }
 
@@ -218,8 +217,59 @@ namespace BlackBox
 
             for (uint i = 0; i < tauFirstTests.Length; i++)
             {
-                // integer content so should be exact match
-                CompareExactMatch(FormatPath(outputFilePatternExpected, i), FormatPath(outputFilePatternActual, i));
+                CompareExplorationData(FormatPath(outputFilePatternExpected, i), FormatPath(outputFilePatternActual, i));
+            }
+        }
+
+        [TestMethod]
+        public void TestSoftmax()
+        {
+            var softmaxTests = new SoftmaxTestConfiguration[]
+            {
+                new SoftmaxTestConfiguration
+                {
+                    AppId = TestContext.TestName + "LowLambdaFixedActionContext",
+                    ContextType = ContextType.FixedAction, // test fixed-action context
+                    Lambda = 0.1f,
+                    NumberOfActions = 20,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    ScorerConfiguration = new FixedScorerConfiguration { Score = 1 }
+                },
+                new SoftmaxTestConfiguration
+                {
+                    AppId = TestContext.TestName + "LowLambdaVariableActionContext",
+                    ContextType = ContextType.VariableAction, // test variable-action context
+                    Lambda = 0.1f,
+                    NumberOfActions = 20,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    ScorerConfiguration = new FixedScorerConfiguration { Score = 5 }
+                },
+
+                new SoftmaxTestConfiguration
+                {
+                    AppId = TestContext.TestName + "HighLambdaFixedActionContext",
+                    ContextType = ContextType.FixedAction,
+                    Lambda = 0.9f,
+                    NumberOfActions = 10,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    ScorerConfiguration = new IntegerProgressionScorerConfiguration { Start = 1 }
+                },
+                new SoftmaxTestConfiguration
+                {
+                    AppId = TestContext.TestName + "HighLambdaVariableActionContext",
+                    ContextType = ContextType.VariableAction,
+                    Lambda = 0.9f,
+                    NumberOfActions = 10,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    ScorerConfiguration = new IntegerProgressionScorerConfiguration { Start = 5 }
+                }
+            };
+
+            Run(outputFilePatternExpected, outputFilePatternActual, outputJsonConfigFile, softmaxTests);
+
+            for (uint i = 0; i < softmaxTests.Length; i++)
+            {
+                CompareExplorationData(FormatPath(outputFilePatternExpected, i), FormatPath(outputFilePatternActual, i));
             }
         }
 
@@ -253,6 +303,36 @@ namespace BlackBox
             string[] lines2 = File.ReadAllLines(file2).Select(l => l.Trim()).Where(l => !String.IsNullOrEmpty(l)).ToArray();
 
             Assert.IsTrue(Enumerable.SequenceEqual(lines1, lines2));
+        }
+
+        private void CompareExplorationData(string file1, string file2)
+        {
+            var extractExploration = (Func<string, Tuple<uint, string, float, string>>)((line) => 
+            {
+                string[] barData = line.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                string[] spaceData = barData[0].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                return new Tuple<uint, string, float, string>(
+                    Convert.ToUInt32(spaceData[0]), // action
+                    spaceData[1].Trim(), // key
+                    Convert.ToSingle(spaceData[2]), // prob
+                    barData[1].Trim()); // context
+            });
+
+            string[] lines1 = File.ReadAllLines(file1).Select(l => l.Trim()).Where(l => !String.IsNullOrEmpty(l)).ToArray();
+            string[] lines2 = File.ReadAllLines(file2).Select(l => l.Trim()).Where(l => !String.IsNullOrEmpty(l)).ToArray();
+
+            Assert.AreEqual(lines1.Length, lines2.Length);
+
+            for (int i = 0; i < lines1.Length; i++)
+            {
+                Tuple<uint, string, float, string> data1 = extractExploration(lines1[i]);
+                Tuple<uint, string, float, string> data2 = extractExploration(lines2[i]);
+
+                Assert.AreEqual(data1.Item1, data2.Item1);
+                Assert.AreEqual(data1.Item2, data2.Item2);
+                Assert.IsTrue(Math.Abs(data1.Item3 - data2.Item3) <= PrecisionOffset);
+                Assert.AreEqual(data1.Item4, data2.Item4);
+            }
         }
 
         private void Run(string outputFilePatternExpected, string outputFilePatternActual, string outputJsonConfigFile, ITestConfiguration[] tests)
@@ -301,5 +381,6 @@ namespace BlackBox
         private readonly string CppExePath = @"..\..\..\explore-cpp\bin\x64\Release\black_box_tests.exe";
         private readonly string CsharpExePath = @"..\..\..\explore-csharp\bin\AnyCPU\Release\BlackBoxTests.exe";
         private readonly string WorkingDir = Path.Combine(Directory.GetCurrentDirectory(), "Test");
+        private readonly float PrecisionOffset = 1e-4f;
     }
 }

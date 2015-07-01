@@ -56,6 +56,17 @@ namespace BlackBox
         PolicyType PolicyType { get; }
     }
 
+    public interface IScorerConfiguration
+    {
+        /// <summary>
+        /// The type of default scorer used within the exploration algorithm.
+        /// </summary>
+        /// <remarks>
+        /// Black-box interface for each language should implement a corresponding IScorer based on this type and returning the scores as specified in the test configuration.
+        /// </remarks>
+        ScorerType ScorerType { get; }
+    }
+
     /// <summary>
     /// Black-box interface needs to implement an IPolicy class which always returns the same value as the Action property below.
     /// </summary>
@@ -67,6 +78,29 @@ namespace BlackBox
         }
 
         public uint Action { get; set; }
+    }
+
+    public class FixedScorerConfiguration : IScorerConfiguration
+    {
+        public ScorerType ScorerType
+        {
+            get { return ScorerType.Fixed; }
+        }
+
+        public int Score { get; set; }
+    }
+
+    public class IntegerProgressionScorerConfiguration : IScorerConfiguration
+    {
+        public ScorerType ScorerType
+        {
+            get { return ScorerType.IntegerProgression; }
+        }
+
+        /// <summary>
+        /// Start of the progression, up until Start + NumberOfActions
+        /// </summary>
+        public int Start { get; set; }
     }
 
     public class PrgTestConfiguration : ITestConfiguration
@@ -99,17 +133,38 @@ namespace BlackBox
         public IPolicyConfiguration PolicyConfiguration { get; set; }
     }
 
+    public class SoftmaxTestConfiguration : BaseExploreTestConfiguration
+    {
+        public override TestType Type { get { return TestType.Softmax; } }
+        public float Lambda { get; set; }
+        public IScorerConfiguration ScorerConfiguration { get; set; }
+    }
+
     public enum TestType
     { 
         Prg = 0,
         Hash,
         EpsilonGreedy,
-        TauFirst
+        TauFirst,
+        Softmax
     }
 
     public enum PolicyType
     { 
         Fixed = 0
+    }
+
+    public enum ScorerType
+    {
+        /// <summary>
+        /// Returns scores that are all equal to 1 (thus uniform distribution).
+        /// </summary>
+        Fixed = 0,
+        
+        /// <summary>
+        /// Returns scores that are integer progression from 1 to NumberOfActions.
+        /// </summary>
+        IntegerProgression
     }
 
     public enum ContextType
