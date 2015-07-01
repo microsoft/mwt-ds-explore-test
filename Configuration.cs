@@ -9,12 +9,17 @@ namespace BlackBox
         string OutputFile { get; set; }
     }
 
-    public interface IExploreTestConfiguration : ITestConfiguration
+    public abstract class BaseExploreTestConfiguration : ITestConfiguration
     {
+        /// <summary>
+        /// The type of the test to run.
+        /// </summary>
+        public abstract TestType Type { get; }
+
         /// <summary>
         /// The application Id.
         /// </summary>
-        string AppId { get; set; }
+        public string AppId { get; set; }
 
         /// <summary>
         /// The type of context, e.g. fixed-action or variable-action context.
@@ -22,17 +27,22 @@ namespace BlackBox
         /// <remarks>
         /// Black-box interface for each language should implement a corresponding Context based on this type.
         /// </remarks>
-        ContextType ContextType { get; set; }
+        public ContextType ContextType { get; set; }
 
         /// <summary>
         /// Number of actions to explore.
         /// </summary>
-        uint NumberOfActions { get; set; }
+        public uint NumberOfActions { get; set; }
 
         /// <summary>
         /// List of experimental unit Ids to run exploration over.
         /// </summary>
-        List<string> ExperimentalUnitIdList { get; set; }
+        public List<string> ExperimentalUnitIdList { get; set; }
+
+        /// <summary>
+        /// The output file to write to.
+        /// </summary>
+        public string OutputFile { get; set; }
     }
 
     public interface IPolicyConfiguration
@@ -75,15 +85,17 @@ namespace BlackBox
         public string OutputFile { get; set; }
     }
 
-    public class EpsilonGreedyTestConfiguration : IExploreTestConfiguration
+    public class EpsilonGreedyTestConfiguration : BaseExploreTestConfiguration
     {
-        public string AppId { get; set; }
-        public TestType Type { get { return TestType.EpsilonGreedy; } }
-        public ContextType ContextType { get; set; }
-        public string OutputFile { get; set; }
-        public uint NumberOfActions { get; set; }
-        public List<string> ExperimentalUnitIdList { get; set; }
+        public override TestType Type { get { return TestType.EpsilonGreedy; } }
         public float Epsilon { get; set; }
+        public IPolicyConfiguration PolicyConfiguration { get; set; }
+    }
+
+    public class TauFirstTestConfiguration : BaseExploreTestConfiguration
+    {
+        public override TestType Type { get { return TestType.TauFirst; } }
+        public uint Tau { get; set; }
         public IPolicyConfiguration PolicyConfiguration { get; set; }
     }
 
@@ -91,7 +103,8 @@ namespace BlackBox
     { 
         Prg = 0,
         Hash,
-        EpsilonGreedy
+        EpsilonGreedy,
+        TauFirst
     }
 
     public enum PolicyType

@@ -13,10 +13,6 @@ namespace BlackBox
         [TestMethod]
         public void TestPrg()
         {
-            string outputFilePatternExpected = "prg_result_{0}_expected.txt";
-            string outputFilePatternActual = "prg_result_{0}_actual.txt";
-            string outputJsonConfigFile = "prg.json";
-
             // 2 tests for integer interval and 2 tests for unit interval.
             var prgTests = new ITestConfiguration[4];
             for (uint i = 0; i < prgTests.Length; i++)
@@ -53,10 +49,6 @@ namespace BlackBox
         [TestMethod]
         public void TestHash()
         {
-            string outputFilePatternExpected = "hash_result_{0}_expected.txt";
-            string outputFilePatternActual = "hash_result_{0}_actual.txt";
-            string outputJsonConfigFile = "hash.json";
-
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
 
             var rand = new Random();
@@ -104,16 +96,12 @@ namespace BlackBox
         [TestMethod]
         public void TestEpsilonGreedy()
         {
-            string outputFilePatternExpected = "epsilon_greedy_result_{0}_expected.txt";
-            string outputFilePatternActual = "epsilon_greedy_result_{0}_actual.txt";
-            string outputJsonConfigFile = "epsilon_greedy.json";
-
             var epsilonGreedyTests = new EpsilonGreedyTestConfiguration[]
             {
                 // No exploration
                 new EpsilonGreedyTestConfiguration
                 {
-                    AppId = "EpsilonGreedyNoExplorationFixedActionContext",
+                    AppId = TestContext.TestName + "NoExplorationFixedActionContext",
                     ContextType = ContextType.FixedAction, // test fixed-action context
                     Epsilon = 0f,
                     NumberOfActions = 20,
@@ -122,7 +110,7 @@ namespace BlackBox
                 },
                 new EpsilonGreedyTestConfiguration
                 {
-                    AppId = "EpsilonGreedyNoExplorationVariableActionContext",
+                    AppId = TestContext.TestName + "NoExplorationVariableActionContext",
                     ContextType = ContextType.VariableAction, // test variable-action context
                     Epsilon = 0f,
                     NumberOfActions = 20,
@@ -133,7 +121,7 @@ namespace BlackBox
                 // Regular exploration
                 new EpsilonGreedyTestConfiguration
                 {
-                    AppId = "EpsilonGreedyRegularExplorationFixedActionContext",
+                    AppId = TestContext.TestName + "RegularExplorationFixedActionContext",
                     ContextType = ContextType.FixedAction,
                     Epsilon = 0.2f,
                     NumberOfActions = 10,
@@ -142,7 +130,7 @@ namespace BlackBox
                 },
                 new EpsilonGreedyTestConfiguration
                 {
-                    AppId = "EpsilonGreedyRegularExplorationVariableActionContext",
+                    AppId = TestContext.TestName + "RegularExplorationVariableActionContext",
                     ContextType = ContextType.VariableAction,
                     Epsilon = 0.2f,
                     NumberOfActions = 10,
@@ -153,7 +141,7 @@ namespace BlackBox
                 // Heavy exploration
                 new EpsilonGreedyTestConfiguration
                 {
-                    AppId = "EpsilonGreedyHeavyExplorationFixedActionContext",
+                    AppId = TestContext.TestName + "HeavyExplorationFixedActionContext",
                     ContextType = ContextType.FixedAction,
                     Epsilon = 0.9f,
                     NumberOfActions = 90, // test many actions
@@ -162,7 +150,7 @@ namespace BlackBox
                 },
                 new EpsilonGreedyTestConfiguration
                 {
-                    AppId = "EpsilonGreedyHeavyExplorationVariableActionContext",
+                    AppId = TestContext.TestName + "HeavyExplorationVariableActionContext",
                     ContextType = ContextType.VariableAction,
                     Epsilon = 0.9f,
                     NumberOfActions = 90,
@@ -180,6 +168,61 @@ namespace BlackBox
             }
         }
 
+        [TestMethod]
+        public void TestTauFirst()
+        {
+            var tauFirstTests = new TauFirstTestConfiguration[]
+            {
+                // No exploration
+                new TauFirstTestConfiguration
+                {
+                    AppId = TestContext.TestName + "NoExplorationFixedActionContext",
+                    ContextType = ContextType.FixedAction, // test fixed-action context
+                    Tau = 0,
+                    NumberOfActions = 20,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfiguration = new FixedPolicyConfiguration { Action = 10 }
+                },
+                new TauFirstTestConfiguration
+                {
+                    AppId = TestContext.TestName + "NoExplorationVariableActionContext",
+                    ContextType = ContextType.VariableAction, // test variable-action context
+                    Tau = 5,
+                    NumberOfActions = 20,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfiguration = new FixedPolicyConfiguration { Action = 10 }
+                },
+
+                // Heavy exploration
+                new TauFirstTestConfiguration
+                {
+                    AppId = TestContext.TestName + "HeavyExplorationFixedActionContext",
+                    ContextType = ContextType.FixedAction,
+                    Tau = 100,
+                    NumberOfActions = 10,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfiguration = new FixedPolicyConfiguration { Action = 9 }
+                },
+                new TauFirstTestConfiguration
+                {
+                    AppId = TestContext.TestName + "HeavyExplorationVariableActionContext",
+                    ContextType = ContextType.VariableAction,
+                    Tau = 100,
+                    NumberOfActions = 10,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfiguration = new FixedPolicyConfiguration { Action = 9 }
+                }
+            };
+
+            Run(outputFilePatternExpected, outputFilePatternActual, outputJsonConfigFile, tauFirstTests);
+
+            for (uint i = 0; i < tauFirstTests.Length; i++)
+            {
+                // integer content so should be exact match
+                CompareExactMatch(FormatPath(outputFilePatternExpected, i), FormatPath(outputFilePatternActual, i));
+            }
+        }
+
         [TestInitialize]
         public void Initialize()
         {
@@ -188,6 +231,11 @@ namespace BlackBox
                 Directory.Delete(WorkingDir, recursive: true);
             }
             Directory.CreateDirectory(WorkingDir);
+
+            // {0} is test config id since multiple configs can run within one test method.
+            outputFilePatternExpected = TestContext.TestName + "_result_{0}_expected.txt";
+            outputFilePatternActual = TestContext.TestName + "_result_{0}_actual.txt";
+            outputJsonConfigFile = TestContext.TestName + ".json";
         }
 
         [TestCleanup]
@@ -239,6 +287,16 @@ namespace BlackBox
         {
             return Path.Combine(WorkingDir, string.Format(pattern, iteration));
         }
+
+        ///// <summary>
+        ///// Gets or sets the test context which provides
+        ///// information about and functionality for the current test run.
+        ///// </summary>
+        public TestContext TestContext { get; set; }
+
+        private string outputFilePatternExpected;
+        private string outputFilePatternActual;
+        private string outputJsonConfigFile;
 
         private readonly string CppExePath = @"..\..\..\explore-cpp\bin\x64\Release\black_box_tests.exe";
         private readonly string CsharpExePath = @"..\..\..\explore-csharp\bin\AnyCPU\Release\BlackBoxTests.exe";
