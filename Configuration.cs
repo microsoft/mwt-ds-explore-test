@@ -146,6 +146,12 @@ namespace BlackBox
         public IScorerConfiguration ScorerConfiguration { get; set; }
     }
 
+    public class BootstrapTestConfiguration : BaseExploreTestConfiguration
+    {
+        public override TestType Type { get { return TestType.Bootstrap; } }
+        public IPolicyConfiguration[] PolicyConfigurations { get; set; }
+    }
+
     public enum TestType
     { 
         Prg = 0,
@@ -153,7 +159,8 @@ namespace BlackBox
         EpsilonGreedy,
         TauFirst,
         Softmax,
-        Generic
+        Generic,
+        Bootstrap
     }
 
     public enum PolicyType

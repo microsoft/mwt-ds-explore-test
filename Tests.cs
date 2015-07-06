@@ -320,6 +320,48 @@ namespace BlackBox
             }
         }
 
+        [TestMethod]
+        public void TestBootstrap()
+        {
+            var bootstrapTests = new BootstrapTestConfiguration[]
+            {
+                new BootstrapTestConfiguration
+                {
+                    AppId = TestContext.TestName + "NoPolicyAgreeListFixedActionContext",
+                    ContextType = ContextType.FixedAction, // test fixed-action context
+                    NumberOfActions = 20,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfigurations = Enumerable.Range(1, 10).Select(i => 
+                        new FixedPolicyConfiguration { Action = (uint)i }).ToArray()
+                },
+                new BootstrapTestConfiguration
+                {
+                    AppId = TestContext.TestName + "NoPolicyAgreeListVariableActionContext",
+                    ContextType = ContextType.VariableAction, // test variable-action context
+                    NumberOfActions = 20,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfigurations = Enumerable.Range(1, 10).Select(i => 
+                        new FixedPolicyConfiguration { Action = (uint)i }).ToArray()
+                },
+                new BootstrapTestConfiguration
+                {
+                    AppId = TestContext.TestName + "SomePolicyAgreeListVariableActionContext",
+                    ContextType = ContextType.VariableAction, // test variable-action context
+                    NumberOfActions = 20,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    PolicyConfigurations = Enumerable.Range(1, 10).Select(i => 
+                        new FixedPolicyConfiguration { Action = (uint) (i % 7) + 1 }).ToArray()
+                }
+            };
+
+            Run(outputFilePatternExpected, outputFilePatternActual, outputJsonConfigFile, bootstrapTests);
+
+            for (uint i = 0; i < bootstrapTests.Length; i++)
+            {
+                CompareExplorationData(FormatPath(outputFilePatternExpected, i), FormatPath(outputFilePatternActual, i));
+            }
+        }
+
         [TestInitialize]
         public void Initialize()
         {
