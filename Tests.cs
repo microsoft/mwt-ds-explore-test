@@ -457,10 +457,10 @@ namespace BlackBox
             return Path.Combine(WorkingDir, string.Format(pattern, iteration));
         }
 
-        ///// <summary>
-        ///// Gets or sets the test context which provides
-        ///// information about and functionality for the current test run.
-        ///// </summary>
+        /// <summary>
+        /// Gets or sets the test context which provides
+        /// information about and functionality for the current test run.
+        /// </summary>
         public TestContext TestContext { get; set; }
 
         private string outputFilePatternExpected;
