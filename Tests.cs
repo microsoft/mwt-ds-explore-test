@@ -273,6 +273,53 @@ namespace BlackBox
             }
         }
 
+        [TestMethod]
+        public void TestGeneric()
+        {
+            var genericTests = new GenericTestConfiguration[]
+            {
+                new GenericTestConfiguration
+                {
+                    AppId = TestContext.TestName + "FixedScorerFixedActionContext",
+                    ContextType = ContextType.FixedAction, // test fixed-action context
+                    NumberOfActions = 20,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    ScorerConfiguration = new FixedScorerConfiguration { Score = 1 }
+                },
+                new GenericTestConfiguration
+                {
+                    AppId = TestContext.TestName + "FixedScorerVariableActionContext",
+                    ContextType = ContextType.VariableAction, // test variable-action context
+                    NumberOfActions = 20,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    ScorerConfiguration = new FixedScorerConfiguration { Score = 5 }
+                },
+                new GenericTestConfiguration
+                {
+                    AppId = TestContext.TestName + "ProgressScorerFixedActionContext",
+                    ContextType = ContextType.FixedAction,
+                    NumberOfActions = 10,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    ScorerConfiguration = new IntegerProgressionScorerConfiguration { Start = 1 }
+                },
+                new GenericTestConfiguration
+                {
+                    AppId = TestContext.TestName + "ProgressScorerVariableActionContext",
+                    ContextType = ContextType.VariableAction,
+                    NumberOfActions = 10,
+                    ExperimentalUnitIdList = Enumerable.Range(1, 100).Select(i => i.ToString()).ToList(),
+                    ScorerConfiguration = new IntegerProgressionScorerConfiguration { Start = 5 }
+                }
+            };
+
+            Run(outputFilePatternExpected, outputFilePatternActual, outputJsonConfigFile, genericTests);
+
+            for (uint i = 0; i < genericTests.Length; i++)
+            {
+                CompareExplorationData(FormatPath(outputFilePatternExpected, i), FormatPath(outputFilePatternActual, i));
+            }
+        }
+
         [TestInitialize]
         public void Initialize()
         {

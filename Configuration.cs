@@ -140,13 +140,20 @@ namespace BlackBox
         public IScorerConfiguration ScorerConfiguration { get; set; }
     }
 
+    public class GenericTestConfiguration : BaseExploreTestConfiguration
+    {
+        public override TestType Type { get { return TestType.Generic; } }
+        public IScorerConfiguration ScorerConfiguration { get; set; }
+    }
+
     public enum TestType
     { 
         Prg = 0,
         Hash,
         EpsilonGreedy,
         TauFirst,
-        Softmax
+        Softmax,
+        Generic
     }
 
     public enum PolicyType
