@@ -54,7 +54,7 @@ namespace BlackBox
             var rand = new Random();
 
             var hashTests = new ITestConfiguration[5];
-            for (uint i = 0; i < hashTests.Length; i++)
+            for (uint i = 0; i < hashTests.Length - 1; i++)
             {
                 int numValues = rand.Next(10, 20);
                 var values = new string[numValues];
@@ -83,6 +83,11 @@ namespace BlackBox
                     Values = values.ToList()
                 };
             }
+
+            hashTests[hashTests.Length - 1] = new HashTestConfiguration
+            {
+                Values = new[] { "是是asda阿斯顿", " ", "     ", "\t\r\n", "\r", "hô ooaf à ị ẻ ể \r \t \n \\ồ" }.ToList()
+            };
 
             Run(outputFilePatternExpected, outputFilePatternActual, outputJsonConfigFile, hashTests);
 
