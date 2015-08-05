@@ -86,8 +86,8 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>"$(MSBuildBinPath)\msbuild.exe" "$(SolutionDir)\..\explore-csharp\explore.sln" /p:Configuration=Release;Platform="Any CPU"
-"$(MSBuildBinPath)\msbuild.exe" "$(SolutionDir)\..\explore-cpp\explore.sln" /p:Configuration=Release;Platform=x64</PostBuildEvent>
+    <PostBuildEvent>"$(MSBuildBinPath)\msbuild.exe" "$(SolutionDir)\..\explore-csharp\explore.sln" /p:Configuration=Release;Platform="Any CPU" /t:Clean,Build
+"$(MSBuildBinPath)\msbuild.exe" "$(SolutionDir)\..\explore-cpp\explore.sln" /p:Configuration=Release;Platform=x64 /t:Clean,Build</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
