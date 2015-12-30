@@ -1,0 +1,11 @@
+version: 1.0.{build}
+configuration: Release
+platform: Any CPU
+before_build:
+- ps: >-
+    git clone -q --branch=master https://github.com/multiworldtesting/explore-csharp.git C:\projects\explore-csharp
+
+    git clone -q --branch=master https://github.com/multiworldtesting/explore-cpp.git C:\projects\explore-cpp
+build:
+  project: Test.sln
+  verbosity: minimal
