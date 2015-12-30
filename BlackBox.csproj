@@ -88,8 +88,8 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>"$(MSBuildBinPath)\msbuild.exe" "$(SolutionDir)\..\explore-csharp\explore.sln" /p:Configuration=Release;Platform="Any CPU" /t:Clean,Build
-"$(MSBuildBinPath)\msbuild.exe" "$(SolutionDir)\..\explore-cpp\explore.sln" /p:Configuration=Release;Platform=x64 /t:Clean,Build</PostBuildEvent>
+    <PostBuildEvent>"$(MSBuildBinPath)\msbuild.exe" "$(SolutionDir)..\explore-csharp\explore.sln" /p:Configuration=Release;Platform="Any CPU" /t:Clean,Build
+"$(MSBuildBinPath)\msbuild.exe" "$(SolutionDir)..\explore-cpp\explore.sln" /p:Configuration=Release;Platform=x64 /t:Clean,Build</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
