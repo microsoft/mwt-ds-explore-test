@@ -1,3 +1,5 @@
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/MultiWorldTesting/explore-test?branch=master&svg=true)](https://ci.appveyor.com/project/lhoang29/explore-test)
+
 Multi-language black-box testing framework for exploration library using command-line interface
 
 Instructions to run (using VS 2013):
